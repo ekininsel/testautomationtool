@@ -72,13 +72,17 @@ public class MethodPrinter {
 
 		MethodSpec[] testMet = new MethodSpec[array.size()];
 		List<MethodSpec> list = null;
+		List<String> parameterList = null;
 		int i = 0;
 		while (i < array.size()) {
+			parameterList = Arrays.asList(parameters.get(i));
+			if (typeName.get(i) == "void")
+				typeName.set(i, "");
 			CodeBlock code = CodeBlock.builder()
 					.addStatement(typeName.get(i) + " actual = " + getClassName(classDirectory).toString().toLowerCase()
-							+ "." + array.get(i) + "(" + parameters.get(i) + ")")
+							+ "." + array.get(i) + "(" +")")
 					.build();
-			testMet[i] = MethodSpec.methodBuilder("test" + array.get(i)).addAnnotation(Test.class)
+			testMet[i] = MethodSpec.methodBuilder("test" + array.get(i).toUpperCase()).addAnnotation(Test.class)
 					.addModifiers(Modifier.PUBLIC, Modifier.FINAL).addCode(code).build();
 			list = Arrays.asList(testMet);
 			// System.out.println(methodInside(testMet[i], array.get(i)));
