@@ -11,6 +11,7 @@ public class WithOneMethodTest {
   private WithOneMethod withonemethod = new WithOneMethod();
 
   @Test
-  public void testadd() {
+  public final void testadd() {
+    ınt actual = withonemethod.add();
   }
 }

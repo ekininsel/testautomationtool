@@ -12,26 +12,26 @@ public class MathTest {
 
   @Test
   public final void testvalidate() {
-    Boolean actual = math.validate;
+    Boolean actual = math.validate( );
   }
 
   @Test
   public final void testprint() {
-    void actual = math.print;
+     actual = math.print( );
   }
 
   @Test
   public final void testemptyMethod() {
-    void actual = math.emptyMethod;
+     actual = math.emptyMethod( );
   }
 
   @Test
   public final void teststr() {
-    String actual = math.str;
+    String actual = math.str( );
   }
 
   @Test
   public final void testadd() {
-    ınt actual = math.add;
+    ınt actual = math.add( );
   }
 }

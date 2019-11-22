@@ -12,21 +12,21 @@ public class CalculatorTest {
 
   @Test
   public final void testadd() {
-    ınt actual = calculator.add([ınt value1, ınt value2]);
+    ınt actual = calculator.add([[ınt value1, ınt value2]]);
   }
 
   @Test
   public final void testsubtract() {
-    ınt actual = calculator.subtract([ınt value1, ınt value2]);
+    ınt actual = calculator.subtract([[ınt value1, ınt value2]]);
   }
 
   @Test
   public final void testmultiply() {
-    ınt actual = calculator.multiply([ınt value1, ınt value2]);
+    ınt actual = calculator.multiply([[ınt value1, ınt value2]]);
   }
 
   @Test
   public final void testdivide() {
-    ınt actual = calculator.divide([ınt value1, ınt value2]);
+    ınt actual = calculator.divide([[ınt value1, ınt value2]]);
   }
 }
