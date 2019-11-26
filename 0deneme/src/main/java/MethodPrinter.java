@@ -82,11 +82,16 @@ public class MethodPrinter {
 					.addStatement(typeName.get(i) + " actual = " + getClassName(classDirectory).toString().toLowerCase()
 							+ "." + array.get(i) + "(" +")")
 					.build();
-			testMet[i] = MethodSpec.methodBuilder("test" + array.get(i).toUpperCase()).addAnnotation(Test.class)
+			
+			//new
+			String testName = array.get(i).substring(0,1).toUpperCase() + array.get(i).substring(1);
+
+			testMet[i] = MethodSpec.methodBuilder("test" + testName).addAnnotation(Test.class)
 					.addModifiers(Modifier.PUBLIC, Modifier.FINAL).addCode(code).build();
 			list = Arrays.asList(testMet);
 			// System.out.println(methodInside(testMet[i], array.get(i)));
 			i++;
+			
 		}
 		
 		TypeSpec generatedTestClass = TypeSpec.classBuilder(getClassName(classDirectory) + "Test").addField(object)
