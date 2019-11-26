@@ -36,6 +36,11 @@ public class MethodPrinter {
 	static ArrayList<String> array = new ArrayList<String>();
 	static ArrayList<String> typeName = new ArrayList<String>();
 	static ArrayList<String> parameters = new ArrayList<String>();
+	//new
+	static ArrayList<Integer> parameterNumbers = new ArrayList<Integer>();
+	
+	
+	
 	static String packName;
 	static String fileTXT = null;
 
@@ -97,6 +102,21 @@ public class MethodPrinter {
 		MethodSpec[] testMet = new MethodSpec[array.size()];
 		List<MethodSpec> list = null;
 		List<String> parameterList = null;
+		//new
+		List<String> stringList = new ArrayList<>();
+		stringList.add("ekin");
+		stringList.add("ekin1");
+		stringList.add("ekin2");
+		stringList.add("ekin3");
+		
+		List<Integer> intList = new ArrayList<>();
+		intList.add(1);
+		intList.add(2);
+		intList.add(3);
+		intList.add(4);
+		intList.add(5);
+		intList.add(6);
+		
 		int i = 0;
 		while (i < array.size()) {
 			parameterList = Arrays.asList(parameters.get(i));
@@ -104,8 +124,11 @@ public class MethodPrinter {
 					// .addStatement(typeName.get(i) + " actual = " +
 					// getClassName(classDirectory).toString().toLowerCase()
 					// + "." + array.get(i) + "(" +")")
-					.addStatement("assertEquals(0, " + objectName + "." + array.get(i) + "(12, 5))").build();
-
+				//new
+					.addStatement(
+							"assertEquals(7, " + objectName + "." + array.get(i) + "(" + parameterNumbers.get(i) + ")")
+					.build();
+			
 			String testName = array.get(i).substring(0, 1).toUpperCase() + array.get(i).substring(1);
 
 			testMet[i] = MethodSpec.methodBuilder("test" + testName).addAnnotation(Test.class)
@@ -151,7 +174,8 @@ public class MethodPrinter {
 			// parameters.addAll(n.getParameters());
 			array.add(n.getNameAsString());
 			parameters.add(n.getParameters().toString().replaceAll("(^\\[|\\]$)", ""));
-			System.out.println(parameters);
+			//new
+			parameterNumbers.add(n.getParameters().size());
 		}
 	}
 
