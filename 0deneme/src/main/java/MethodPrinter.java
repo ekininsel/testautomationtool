@@ -34,11 +34,12 @@ public class MethodPrinter {
 	@SuppressWarnings("rawtypes")
 	static Class findClassName = null;
 	static ArrayList<String> array = new ArrayList<String>();
-	static ArrayList<String> typeName = new ArrayList<String>();
 	static ArrayList<String> parameters = new ArrayList<String>();
 	static ArrayList<Integer> parameterNumbers = new ArrayList<Integer>();
+	static ArrayList<String> parametersTypes = new ArrayList<String>();
 	static String packName;
-	static String fileTXT = null;
+	static String stringTXTFILE = "/Users/ekininsel1/Desktop/cs401File.txt";
+	static String intTXTFILE = "/Users/ekininsel1/Desktop/cs401intFile.txt";
 
 	@SuppressWarnings("resource")
 	public static void main(String[] args) throws Exception {
@@ -47,9 +48,6 @@ public class MethodPrinter {
 		Scanner inputReader = new Scanner(System.in);
 		String classDirectory = inputReader.nextLine();
 		FileInputStream in = new FileInputStream(classDirectory);
-		System.out.println("Please enter the txt file that will be used.");
-		Scanner fileReader = new Scanner(System.in);
-		fileTXT = fileReader.nextLine();
 
 		methodParser(in, classDirectory);
 	}
@@ -73,65 +71,67 @@ public class MethodPrinter {
 	private static void classGenerator(String classDirectory, CompilationUnit cu) throws Exception {
 		// visit the methods names
 		new MethodVisitor().visit(cu, null);
-		// testCreator();
-		String objectName = getClassName(classDirectory).toString().toLowerCase();
 
-		FieldSpec file = FieldSpec.builder(File.class, "file").initializer("new File (\"" + fileTXT + "\")").build();
-		FieldSpec scanner = FieldSpec.builder(Scanner.class, "scanner").initializer("null").build();
-		FieldSpec fileList = FieldSpec
-				.builder(ParameterizedTypeName.get(ClassName.get(ArrayList.class), TypeName.get(Object.class)),
-						"fileList")
+		String objectName = getClassName(classDirectory).toString().toLowerCase();
+		
+		FieldSpec strList = FieldSpec
+				.builder(ParameterizedTypeName.get(ClassName.get(List.class), TypeName.get(String.class)), "stringList")
+				.initializer("new ArrayList<>()").build();
+		FieldSpec integerList = FieldSpec
+				.builder(ParameterizedTypeName.get(ClassName.get(List.class), TypeName.get(Integer.class)), "intList")
 				.initializer("new ArrayList<>()").build();
 
-		CodeBlock listRegister = CodeBlock.builder().beginControlFlow("while(scanner.hasNextLine())")
-				.addStatement("fileList.add(scanner.hasNext())").endControlFlow().build();
+		FieldSpec strFileTXT = FieldSpec.builder(File.class, "stringFile")
+				.initializer("new File (\"" + stringTXTFILE + "\")").build();
+		FieldSpec integerFileTXT = FieldSpec.builder(File.class, "intFile")
+				.initializer("new File (\"" + intTXTFILE + "\")").build();
+
+		FieldSpec scanner = FieldSpec.builder(Scanner.class, "stringScanner").initializer("null").build();
+		FieldSpec scnr = FieldSpec.builder(Scanner.class, "intScanner").initializer("null").build();
+
+		CodeBlock strListRegister = CodeBlock.builder().beginControlFlow("while(stringScanner.hasNext())")
+				.addStatement("stringList.add(stringScanner.nextLine())").endControlFlow().build();
+		CodeBlock intListRegister = CodeBlock.builder().beginControlFlow("while(intScanner.hasNext())")
+				.addStatement("intList.add(intScanner.nextInt())").endControlFlow().build();
 
 		MethodSpec initMethod = MethodSpec.methodBuilder("init").addAnnotation(Before.class)
-				.addException(Exception.class).addModifiers(Modifier.PUBLIC).addStatement("scanner = new Scanner(file)")
-				// .addCode(listRegister)
+				.addException(Exception.class).addModifiers(Modifier.PUBLIC)
+				.addStatement("stringScanner = new Scanner(stringFile)")
+				.addStatement("intScanner = new Scanner(intFile)")
+				.addCode(strListRegister).addStatement("stringScanner.close()").addCode(intListRegister)
+				.addStatement("intScanner.close()")
 				.build();
 
 		FieldSpec object = FieldSpec.builder(classMaker(classDirectory, packName), objectName)
 				.addModifiers(Modifier.PRIVATE).initializer("new $T()", classMaker(classDirectory, packName)).build();
 
-		MethodSpec[] testMet = new MethodSpec[array.size()];
-		List<MethodSpec> list = null;
-		List<String> parameterList = null;
-
-		List<String> stringList = new ArrayList<>();
-		stringList.add("ekin");
-		stringList.add("ekin1");
-		stringList.add("ekin2");
-		stringList.add("ekin3");
-
-		List<Integer> intList = new ArrayList<>();
-		intList.add(1);
-		intList.add(2);
-		intList.add(3);
-		intList.add(4);
-		intList.add(5);
-		intList.add(6);
+		MethodSpec[] testMethods = new MethodSpec[array.size()];
+		List<MethodSpec> testMethodList = null;
 
 		int i = 0;
 		while (i < array.size()) {
-			parameterList = Arrays.asList(parameters.get(i));
-			CodeBlock code = CodeBlock.builder()
-					.addStatement(
-							"assertEquals(7, " + objectName + "." + array.get(i) + "("
-									+ parameterInside(stringList, parameterNumbers.get(i)) + ")")
+
+			CodeBlock assertCode = CodeBlock.builder()
+					.addStatement("assertEquals((7 , "
+							+ objectName
+							+ "." + array.get(i) + "("
+							+ parameterNumbers.get(i) + "))")
 					.build();
 
 			String testName = array.get(i).substring(0, 1).toUpperCase() + array.get(i).substring(1);
 
-			testMet[i] = MethodSpec.methodBuilder("test" + testName).addAnnotation(Test.class)
-					.addModifiers(Modifier.PUBLIC, Modifier.FINAL).addCode(code).build();
-			list = Arrays.asList(testMet);
+			testMethods[i] = MethodSpec.methodBuilder("test" + testName).addAnnotation(Test.class)
+					.addModifiers(Modifier.PUBLIC, Modifier.FINAL).addCode(assertCode).build();
+			testMethodList = Arrays.asList(testMethods);
 
 			i++;
 		}
 
-		TypeSpec generatedTestClass = TypeSpec.classBuilder(getClassName(classDirectory) + "Test").addField(object)
-				.addField(file).addField(scanner).addField(fileList).addMethod(initMethod).addMethods(list)
+		TypeSpec generatedTestClass = TypeSpec.classBuilder(getClassName(classDirectory) + "Test").addField(integerList)
+				.addField(strList).addField(strFileTXT).addField(integerFileTXT).addField(scanner).addField(scnr)
+				.addField(object)
+				.addMethod(initMethod)
+				.addMethods(testMethodList)
 				.addModifiers(Modifier.PUBLIC).build();
 
 		JavaFile javaFile = JavaFile.builder("junit.generate.test", generatedTestClass)
@@ -144,21 +144,6 @@ public class MethodPrinter {
 		} catch (IOException ex) {
 			System.out.println("An exception ...! " + ex.getMessage());
 		}
-	}
-
-	public static String parameterInside(List<String> stringList, int parameterNumber) {
-		String[] parameters = new String[parameterNumber];
-		List<String> parameterInMethod = null;
-		for (int i = 0; i < parameterNumber; i++) {
-			parameters[i] = (String) stringList.get(i);
-			parameterInMethod = Arrays.asList(parameters);
-		}
-		return parameterInMethod.toString();
-	}
-
-	public static TypeName getType(MethodSpec method) {
-		TypeName type = method.returnType;
-		return type;
 	}
 
 	// printing the parsed methods of a class
@@ -174,7 +159,6 @@ public class MethodPrinter {
 			array.add(n.getNameAsString());
 			parameters.add(n.getParameters().toString().replaceAll("(^\\[|\\]$)", ""));
 			parameterNumbers.add(n.getParameters().size());
-
 		}
 	}
 
@@ -218,13 +202,5 @@ public class MethodPrinter {
 		int slashEnd = substringMaker(classDirectory, '/');
 		packName = classDirectory.substring(slashStart + 1, slashEnd);
 		return packName;
-	}
-
-	public static String testCreator() {
-		String method = null;
-		for (int i = 0; i < array.size(); i++) {
-			method = array.get(i);
-		}
-		return method;
 	}
 }
