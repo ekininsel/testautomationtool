@@ -37,6 +37,7 @@ public class MethodPrinter {
 	static ArrayList<String> methodNamesList = new ArrayList<String>();
 	static ArrayList<String> parameters = new ArrayList<String>();
 	static ArrayList<Integer> parameterNumbers = new ArrayList<Integer>();
+	static ArrayList<String> methodsTypes = new ArrayList<String>();
 	static String packName;
 	static String stringTXTFILE = "/Users/ekininsel1/Documents/workspace/0deneme/cs401File.txt";
 	static String intTXTFILE = "/Users/ekininsel1/Documents/workspace/0deneme/cs401intFile.txt";
@@ -132,34 +133,51 @@ public class MethodPrinter {
 
 		int i = 0;
 		while (i < methodNamesList.size()) {
-			parameterTypeCounter(parameterNumbers.get(i));
-			parametersForEveryList = parameters.get(i);
+			System.out.println(methodsTypes.get(i));
+			CodeBlock assertCode = null;
 
-			CodeBlock assertCode = CodeBlock.builder()
-					.addStatement("assertEquals(" + objectName + "." + methodNamesList.get(i) + "("
-							+ parameterInTest(parameterNumbers.get(i), intParametersNames, strParametersNames,
-									parametersForEveryList)
-							+ ") , " + objectName + "." + methodNamesList.get(i) + "("
-							+ parameterInTest(parameterNumbers.get(i), intParametersNames, strParametersNames,
-									parametersForEveryList)
-							+ "))")
-					.build();
+				parameterTypeCounter(parameterNumbers.get(i));
+				parametersForEveryList = parameters.get(i);
+				
+			if (methodsTypes.get(i) != "void") {
+				assertCode = CodeBlock.builder()
+						.addStatement(
+								"assertEquals(" + objectName + "." + methodNamesList.get(i) + "("
+										+ parameterInTest(parameterNumbers.get(i), intParametersNames,
+												strParametersNames, parametersForEveryList)
+										+ ") , " + objectName + "."
+										+ methodNamesList.get(i) + "(" + parameterInTest(parameterNumbers.get(i),
+												intParametersNames, strParametersNames, parametersForEveryList)
+										+ "))")
+						.build();
+			} else {
+				assertCode = CodeBlock.builder()
+						.addStatement(
+								"assertEquals(" + objectName + "." + methodNamesList.get(i) + "("
+										+ parameterInTest(parameterNumbers.get(i), intParametersNames,
+												strParametersNames, parametersForEveryList)
+										+ ") , " + objectName + "."
+										+ methodNamesList.get(i) + "(" + parameterInTest(parameterNumbers.get(i),
+												intParametersNames, strParametersNames, parametersForEveryList)
+										+ "))")
+						.build();
+			}
 
-			char[] letters = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+				char[] letters = "abcdefghijklmnopqrstuvwxyz".toCharArray();
 
-			CodeBlock[] intForLoop = loopCreator(letters, parameterNumbers.get(i), intParametersNames,
-					strParametersNames, parameters, assertCode, parameterInTest(parameterNumbers.get(i),
-							intParametersNames, strParametersNames, parametersForEveryList),
-					returnInputType());
-			fors = Arrays.asList(intForLoop);
+				CodeBlock[] intForLoop = loopCreator(letters, parameterNumbers.get(i), intParametersNames,
+						strParametersNames, parameters, assertCode, parameterInTest(parameterNumbers.get(i),
+								intParametersNames, strParametersNames, parametersForEveryList),
+						returnInputType());
 
-			String testName = methodNamesList.get(i).substring(0, 1).toUpperCase()
-					+ methodNamesList.get(i).substring(1);
+				fors = Arrays.asList(intForLoop);
 
-			testMethods[i] = MethodSpec.methodBuilder("test" + testName).addAnnotation(Test.class)
-					.addModifiers(Modifier.PUBLIC, Modifier.FINAL).addCode(fors.get(fors.size() - 1)).build();
-			testMethodList = Arrays.asList(testMethods);
+				String testName = methodNamesList.get(i).substring(0, 1).toUpperCase()
+						+ methodNamesList.get(i).substring(1);
 
+				testMethods[i] = MethodSpec.methodBuilder("test" + testName).addAnnotation(Test.class)
+						.addModifiers(Modifier.PUBLIC, Modifier.FINAL).addCode(fors.get(fors.size() - 1)).build();
+				testMethodList = Arrays.asList(testMethods);
 			i++;
 		}
 
@@ -183,38 +201,24 @@ public class MethodPrinter {
 	private static String parameterInTest(Integer parameterNumber, String[] intparametersNames,
 			String[] strparametersNames, String parametersForEveryList) {
 		String result = "";
-		// System.out.println(parametersForEveryList);
+		String[] parametersArray = parametersForEveryList.split(",");
+		List parameterList = Arrays.asList(parametersArray);
 
 		int i = 0;
 		while (i < parameterNumber) {
-			if (parametersForEveryList.startsWith("String")) {
-				if (parametersForEveryList.contains("String")) {
+			for (int j = 0; j < parameterList.size(); j++) {
+				if (parameterList.get(j).toString().contains("String")) {
 					if (i == 0)
 						result = strparametersNames[i];
 					else
 						result += "," + strparametersNames[i];
 					i++;
 				}
-				if (parametersForEveryList.contains("ınt")) {
+				if (parameterList.get(j).toString().contains("ınt")) {
 					if (i == 0)
 						result = intparametersNames[i];
 					else
 						result += "," + intparametersNames[i];
-					i++;
-				}
-			} else if (parametersForEveryList.startsWith("ınt")) {
-				if (parametersForEveryList.contains("ınt")) {
-					if (i == 0)
-						result = intparametersNames[i];
-					else
-						result += "," + intparametersNames[i];
-					i++;
-				}
-				if (parametersForEveryList.contains("String")) {
-					if (i == 0)
-						result = strparametersNames[i];
-					else
-						result += "," + strparametersNames[i];
 					i++;
 				}
 			}
@@ -305,21 +309,19 @@ public class MethodPrinter {
 		return typeNum;
 	}
 
-	// ikiden fazla str, int, str şekilde parametre varsa çalışmaz
 	public static String returnInputType() {
+
 		String result = "";
 		for (int i = 0; i < parameters.size(); i++) {
-			if (parameters.get(i).contains("String")) {
-				inputsTypes.add(i, "-String-");
-			}
-			if (parameters.get(i).contains("ınt")) {
-				inputsTypes.add(i, "-ınt-");
-			}
-			if (parameters.get(i).startsWith("String") && parameters.get(i).contains("ınt")) {
-				inputsTypes.add(i, "-String, ınt-");
-			}
-			if (parameters.get(i).startsWith("ınt") && parameters.get(i).contains("String")) {
-				inputsTypes.add(i, "-ınt, String-");
+			String[] parametersArray = parameters.get(i).toString().split(",");
+			List parametersList = Arrays.asList(parametersArray);
+			for (int j = 0; j < parametersList.size(); j++) {
+				if (parametersList.get(j).toString().contains("String")) {
+					inputsTypes.add(i, "-String-");
+				}
+				if (parametersList.get(j).toString().contains("ınt")) {
+					inputsTypes.add(i, "-ınt-");
+				}
 			}
 			result += inputsTypes.get(i).toString();
 		}
@@ -339,6 +341,7 @@ public class MethodPrinter {
 			methodNamesList.add(n.getNameAsString());
 			parameters.add(n.getParameters().toString().replaceAll("(^\\[|\\]$)", ""));
 			parameterNumbers.add(n.getParameters().size());
+			methodsTypes.add(n.getTypeAsString());
 		}
 	}
 
