@@ -80,10 +80,12 @@ public class MethodPrinter {
 		String objectName = getClassName(classDirectory).toString().toLowerCase();
 
 		FieldSpec strList = FieldSpec
-				.builder(ParameterizedTypeName.get(ClassName.get(List.class), TypeName.get(String.class)), "stringList")
+				.builder(ParameterizedTypeName.get(ClassName.get(ArrayList.class), TypeName.get(String.class)),
+						"stringList")
 				.initializer("new ArrayList<>()").addModifiers(Modifier.STATIC).build();
 		FieldSpec integerList = FieldSpec
-				.builder(ParameterizedTypeName.get(ClassName.get(List.class), TypeName.get(Integer.class)), "intList")
+				.builder(ParameterizedTypeName.get(ClassName.get(ArrayList.class), TypeName.get(Integer.class)),
+						"intList")
 				.initializer("new ArrayList<>()").addModifiers(Modifier.STATIC).build();
 
 		FieldSpec strFileTXT = FieldSpec.builder(File.class, "stringFile")
@@ -133,12 +135,11 @@ public class MethodPrinter {
 
 		int i = 0;
 		while (i < methodNamesList.size()) {
-			System.out.println(methodsTypes.get(i));
 			CodeBlock assertCode = null;
 
-				parameterTypeCounter(parameterNumbers.get(i));
-				parametersForEveryList = parameters.get(i);
-				
+			parameterTypeCounter(parameterNumbers.get(i));
+			parametersForEveryList = parameters.get(i);
+
 			if (methodsTypes.get(i) != "void") {
 				assertCode = CodeBlock.builder()
 						.addStatement(
@@ -153,31 +154,28 @@ public class MethodPrinter {
 			} else {
 				assertCode = CodeBlock.builder()
 						.addStatement(
-								"assertEquals(" + objectName + "." + methodNamesList.get(i) + "("
+								"assertNotNull(" + objectName + "." + methodNamesList.get(i) + "("
 										+ parameterInTest(parameterNumbers.get(i), intParametersNames,
 												strParametersNames, parametersForEveryList)
-										+ ") , " + objectName + "."
-										+ methodNamesList.get(i) + "(" + parameterInTest(parameterNumbers.get(i),
-												intParametersNames, strParametersNames, parametersForEveryList)
 										+ "))")
 						.build();
 			}
 
-				char[] letters = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+			char[] letters = "abcdefghijklmnopqrstuvwxyz".toCharArray();
 
-				CodeBlock[] intForLoop = loopCreator(letters, parameterNumbers.get(i), intParametersNames,
-						strParametersNames, parameters, assertCode, parameterInTest(parameterNumbers.get(i),
-								intParametersNames, strParametersNames, parametersForEveryList),
-						returnInputType());
+			CodeBlock[] intForLoop = loopCreator(letters, parameterNumbers.get(i), intParametersNames,
+					strParametersNames, parameters, assertCode, parameterInTest(parameterNumbers.get(i),
+							intParametersNames, strParametersNames, parametersForEveryList),
+					returnInputType());
 
-				fors = Arrays.asList(intForLoop);
+			fors = Arrays.asList(intForLoop);
 
-				String testName = methodNamesList.get(i).substring(0, 1).toUpperCase()
-						+ methodNamesList.get(i).substring(1);
+			String testName = methodNamesList.get(i).substring(0, 1).toUpperCase()
+					+ methodNamesList.get(i).substring(1);
 
-				testMethods[i] = MethodSpec.methodBuilder("test" + testName).addAnnotation(Test.class)
-						.addModifiers(Modifier.PUBLIC, Modifier.FINAL).addCode(fors.get(fors.size() - 1)).build();
-				testMethodList = Arrays.asList(testMethods);
+			testMethods[i] = MethodSpec.methodBuilder("test" + testName).addAnnotation(Test.class)
+					.addModifiers(Modifier.PUBLIC, Modifier.FINAL).addCode(fors.get(fors.size() - 1)).build();
+			testMethodList = Arrays.asList(testMethods);
 			i++;
 		}
 
@@ -310,20 +308,20 @@ public class MethodPrinter {
 	}
 
 	public static String returnInputType() {
-
 		String result = "";
+
 		for (int i = 0; i < parameters.size(); i++) {
 			String[] parametersArray = parameters.get(i).toString().split(",");
 			List parametersList = Arrays.asList(parametersArray);
 			for (int j = 0; j < parametersList.size(); j++) {
 				if (parametersList.get(j).toString().contains("String")) {
-					inputsTypes.add(i, "-String-");
+					inputsTypes.add(j, "-String-");
 				}
 				if (parametersList.get(j).toString().contains("ınt")) {
-					inputsTypes.add(i, "-ınt-");
+					inputsTypes.add(j, "-ınt-");
 				}
+				result += inputsTypes.get(j).toString();
 			}
-			result += inputsTypes.get(i).toString();
 		}
 		return result;
 	}
