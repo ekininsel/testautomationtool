@@ -154,9 +154,9 @@ public class MethodPrinter {
 			} else {
 				assertCode = CodeBlock.builder()
 						.addStatement(
-								"assertNotNull(" + objectName + "." + methodNamesList.get(i) + "("
-										+ parameterInTest(parameterNumbers.get(i), intParametersNames,
-												strParametersNames, parametersForEveryList)
+								"assertNotNull(" + objectName + "."
+										+ methodNamesList.get(i) + "(" + parameterInTest(parameterNumbers.get(i),
+												intParametersNames, strParametersNames, parametersForEveryList)
 										+ "))")
 						.build();
 			}
@@ -229,40 +229,21 @@ public class MethodPrinter {
 			String inputType) {
 
 		CodeBlock[] codes = new CodeBlock[typeNum];
-		List<CodeBlock> insides = null;
-		String[] size = inputType.split("--");
-		int resultSize = 0;
-		for (int k = 0; k < result.length(); k++) {
-			if (result.charAt(k) == ',')
-				resultSize++;
-		}
 
-		String sizeStr = "";
-		String strSize = "";
-		String intSize = "";
+		List<CodeBlock> forLoop = null;
+		String[] size = inputType.split("--");
+
+
+
+		List inputSize = (Arrays.asList(size));
 
 		for (int i = 0; i < typeNum; i++) {
-			if (resultSize == 0) {
-				strSize = "<stringList.size();";
-				intSize = "<intList.size();";
-			} else {
-				strSize = "<stringList.size() - " + resultSize + "; ";
-				intSize = "<intList.size() - " + resultSize + "; ";
-			}
 
-			List inputSize = (Arrays.asList(size));
-			CodeBlock[] inside = loopInside(parameterNumber, result, letters[i]);
-			insides = Arrays.asList(inside);
-			if (inputSize.get(i).toString().contains("String")) {
-				sizeStr = strSize;
-			}
-			if (inputSize.get(i).toString().contains("ınt")) {
-				sizeStr = intSize;
-			}
-			codes[i] = CodeBlock.builder()
-					.beginControlFlow("for(int " + letters[i] + " = 0; " + letters[i] + sizeStr + letters[i] + "++)")
-					.add(insides.toString().replaceAll("(^\\[|\\]$)", "").replace(",", "").replace(" ", ""))
-					.add(assertCode).endControlFlow().build();
+			CodeBlock forLoops = forLoop(parameterNumber, result, letters[i], assertCode);
+			forLoop = Arrays.asList(forLoops);
+
+			codes[i] = CodeBlock.builder().add(forLoop.toString().replaceAll("(^\\[|\\]$)", "")).build();
+
 		}
 		return codes;
 	}
@@ -293,6 +274,61 @@ public class MethodPrinter {
 		return inside;
 	}
 
+	public static CodeBlock forLoop(int parameterNumber, String result, char letters, CodeBlock assertCode) {
+		CodeBlock loop = assertCode;
+		List<String> loops = Arrays.asList(result.split(","));
+		List<CodeBlock> insides = null;
+
+		CodeBlock forLoop = null;
+		CodeBlock[] inside = loopInside(parameterNumber, result, letters);
+		insides = Arrays.asList(inside);
+
+		String sizeStr = "";
+		String strSize = "";
+		String intSize = "";
+
+		int resultSize = 0;
+		for (int k = 0; k < result.length(); k++) {
+			if (result.charAt(k) == ',')
+				resultSize++;
+		}
+
+		for (int i = 0; i < parameterNumber; i++) {
+			if (resultSize == 0) {
+				strSize = "<stringList.size();";
+				intSize = "<intList.size();";
+			} else {
+				strSize = "<stringList.size() - " + resultSize + "; ";
+				intSize = "<intList.size() - " + resultSize + "; ";
+			}
+
+			CodeBlock strListLoop = CodeBlock.builder()
+					.beginControlFlow(
+							"for (int " + letters + " = 0; " + letters + strSize + letters + "++)")
+					.add(insides.toString().replaceAll("(^\\[|\\]$)", "").replace(",", "").replace(" ", ""))
+					.add(assertCode).endControlFlow().build();
+			CodeBlock intListLoop = CodeBlock.builder()
+					.beginControlFlow(
+							"for (int " + letters + " = 0; " + letters + intSize + letters + "++)")
+					.add(insides.toString().replaceAll("(^\\[|\\]$)", "").replace(",", "").replace(" ", ""))
+					.add(assertCode).endControlFlow().build();
+			CodeBlock emptyLoop = CodeBlock.builder().add(assertCode).build();
+
+			forLoop = emptyLoop;
+
+			if (loops.get(i).contains("num")) {
+				forLoop = intListLoop;
+			}
+			if (loops.get(i).contains("str")) {
+				forLoop = strListLoop;
+			}
+
+			loop = CodeBlock.builder().add(forLoop).build();
+
+		}
+		return loop;
+	}
+
 	public static int parameterTypeCounter(Integer parameterNumber) {
 		for (int i = 0; i < parameterNumber; i++) {
 			if (parameters.get(i).contains("ınt")) {
@@ -310,16 +346,19 @@ public class MethodPrinter {
 	public static String returnInputType() {
 		String result = "";
 
+		// System.out.println(parameters);
 		for (int i = 0; i < parameters.size(); i++) {
+
 			String[] parametersArray = parameters.get(i).toString().split(",");
 			List parametersList = Arrays.asList(parametersArray);
+			// System.out.println(parametersList);
 			for (int j = 0; j < parametersList.size(); j++) {
 				if (parametersList.get(j).toString().contains("String")) {
 					inputsTypes.add(j, "-String-");
-				}
-				if (parametersList.get(j).toString().contains("ınt")) {
+				} else if (parametersList.get(j).toString().contains("ınt")) {
 					inputsTypes.add(j, "-ınt-");
-				}
+				} else
+					inputsTypes.add(j, "-/-");
 				result += inputsTypes.get(j).toString();
 			}
 		}
