@@ -163,10 +163,8 @@ public class MethodPrinter {
 
 			char[] letters = "abcdefghijklmnopqrstuvwxyz".toCharArray();
 
-			CodeBlock[] intForLoop = loopCreator(letters, parameterNumbers.get(i), intParametersNames,
-					strParametersNames, parameters, assertCode, parameterInTest(parameterNumbers.get(i),
-							intParametersNames, strParametersNames, parametersForEveryList),
-					returnInputType());
+			CodeBlock[] intForLoop = loopCreator(letters, parameterNumbers.get(i), assertCode, parameterInTest(
+					parameterNumbers.get(i), intParametersNames, strParametersNames, parametersForEveryList));
 
 			fors = Arrays.asList(intForLoop);
 
@@ -224,26 +222,15 @@ public class MethodPrinter {
 		return result;
 	}
 
-	public static CodeBlock[] loopCreator(char[] letters, Integer parameterNumber, String[] strParameter,
-			String[] intParameter, ArrayList<String> parameters, CodeBlock assertCode, String result,
-			String inputType) {
-
+	public static CodeBlock[] loopCreator(char[] letters, Integer parameterNumber, CodeBlock assertCode,
+			String result) {
 		CodeBlock[] codes = new CodeBlock[typeNum];
-
 		List<CodeBlock> forLoop = null;
-		String[] size = inputType.split("--");
-
-
-
-		List inputSize = (Arrays.asList(size));
 
 		for (int i = 0; i < typeNum; i++) {
-
 			CodeBlock forLoops = forLoop(parameterNumber, result, letters[i], assertCode);
 			forLoop = Arrays.asList(forLoops);
-
 			codes[i] = CodeBlock.builder().add(forLoop.toString().replaceAll("(^\\[|\\]$)", "")).build();
-
 		}
 		return codes;
 	}
@@ -251,11 +238,9 @@ public class MethodPrinter {
 	public static CodeBlock[] loopInside(int parameterNumber, String result, char letters) {
 		CodeBlock[] inside = new CodeBlock[parameterNumber];
 		List<String> insides = Arrays.asList(result.split(","));
-
 		String listGet = "";
 
 		for (int i = 0; i < parameterNumber; i++) {
-
 			String plus = "+" + insides.get(i).charAt(3);
 			if (i == 0)
 				plus = "";
@@ -267,9 +252,7 @@ public class MethodPrinter {
 			if (insides.get(i).contains("str")) {
 				listGet = strListGet;
 			}
-
 			inside[i] = CodeBlock.builder().addStatement(insides.get(i) + listGet).build();
-
 		}
 		return inside;
 	}
@@ -324,21 +307,24 @@ public class MethodPrinter {
 			}
 
 			loop = CodeBlock.builder().add(forLoop).build();
-
 		}
 		return loop;
 	}
 
 	public static int parameterTypeCounter(Integer parameterNumber) {
+		int intNum = 0;
+		int strNum = 0;
 		for (int i = 0; i < parameterNumber; i++) {
 			if (parameters.get(i).contains("ınt")) {
-				typeNum++;
-				break;
+				intNum++;
 			}
 			if (parameters.get(i).contains("String")) {
-				typeNum++;
-				break;
+				strNum++;
 			}
+			if (intNum > strNum)
+				typeNum = intNum;
+			else
+				typeNum = strNum;
 		}
 		return typeNum;
 	}
