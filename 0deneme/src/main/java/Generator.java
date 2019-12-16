@@ -32,6 +32,8 @@ public class Generator {
 
 	@SuppressWarnings("rawtypes")
 	static Class findClassName = null;
+	static ArrayList<Method> methodsUnordered = new ArrayList<Method>();
+	static ArrayList<Method> methodsOrdered = new ArrayList<Method>();
 	static ArrayList<String> methodNamesList = new ArrayList<String>();
 	static ArrayList<String> parameters = new ArrayList<String>();
 	static ArrayList<Integer> parameterNumbers = new ArrayList<Integer>();
@@ -46,6 +48,7 @@ public class Generator {
 	static File intFile = new File(intTXTFILE);
 	static File stringFile = new File(stringTXTFILE);
 	static ArrayList<String> resultList = new ArrayList<>();
+	static ArrayList<String> returnType = new ArrayList<>();
 	static ArrayList<String> parameterList = new ArrayList<>();
 	static ArrayList<String> inputsTypes = new ArrayList<String>();
 
@@ -59,8 +62,10 @@ public class Generator {
 
 		intListsScanner();
 		stringListScanner();
-		objectCreator(classMaker(classDirectory, packName));
 		methodParser(in, classDirectory);
+		objectCreator(classMaker(classDirectory, packName));
+		classGenerator(classDirectory);
+
 	}
 
 	public static Object[] intListsScanner() throws FileNotFoundException {
@@ -84,33 +89,30 @@ public class Generator {
 	public static Object objectCreator(Class className) throws Exception {
 		Object classObject = null;
 		classObject = className.newInstance();
-		methodCall(methodsOfClass(classObject), classObject);
+		methodsOfClass(classObject);
+		methodCall(orderReflection(), classObject);
 		return classObject;
 	}
 
 	public static ArrayList<Method> methodsOfClass(Object classObject) {
-		ArrayList<Method> methods = new ArrayList<Method>();
 		int i = 0;
 		while (i < classObject.getClass().getDeclaredMethods().length) {
 			if (!classObject.getClass().getDeclaredMethods()[i].toString().contains("void")) {
-				methods.add(classObject.getClass().getDeclaredMethods()[i]);
+				methodsUnordered.add(classObject.getClass().getDeclaredMethods()[i]);
 			}
 			i++;
 		}
-		return methods;
+		return methodsUnordered;
 	}
 
 	public static void methodCall(ArrayList<Method> method, Object object)
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
 		for (int i = 0; i < method.size(); i++) {
-			// System.out.println(method.get(i));
 			List methodsParameters = Arrays.asList(method.get(i).getParameterTypes());
-			// System.out.println(methodsParameters.toString());
+			returnType.add((method.get(i).getReturnType().toString()));
 			zeroParameterMethods(method, object, i);
-			// int str
 			oneParameterMethod(method, object, i, methodsParameters);
-			// str-str int-int str-int int-str
 			twoParameterMethod(method, object, i, methodsParameters);
 		}
 	}
@@ -118,25 +120,29 @@ public class Generator {
 	public static ArrayList<String> twoParameterMethod(ArrayList<Method> method, Object object, int i,
 			List methodsParameters) throws IllegalAccessException, InvocationTargetException {
 		ArrayList<String> results = new ArrayList<>();
+		ArrayList<String> parameter = new ArrayList<>();
 		if (method.get(i).getParameterCount() == 2) {
 			if (methodsParameters.toString().startsWith("[int")) {
-				if (methodsParameters.toString().contains(", int")) {
+				if (methodsParameters.toString().contains("int]")) {
 					for (int j = 0; j < intList.size(); j++) {
 						for (int k = 0; k < intList.size(); k++) {
 							results.add(method.get(i).invoke(object, intList.get(j), intList.get(k)).toString());
-							String parameter = intList.get(j).toString() + "-" + intList.get(k).toString();
-							parameterList.add(parameter);
+							parameter.add(intList.get(j).toString() + "-" + intList.get(k).toString());
 						}
 					}
 				}
-				if (methodsParameters.toString().contains(", String")) {
+				if (methodsParameters.toString().contains("String]")) {
 					for (int j = 0; j < intList.size(); j++) {
 						for (int k = 0; k < stringList.size(); k++) {
-							results.add('"' + method.get(i).invoke(object, intList.get(j), stringList.get(k)).toString()
+							if (returnType.get(i).contains("String")) {
+								results.add(
+										'"' + method.get(i).invoke(object, intList.get(j), stringList.get(k)).toString()
 									+ '"');
-							String parameter = intList.get(j).toString() + "-" + '"' + stringList.get(k).toString()
-									+ '"';
-							parameterList.add(parameter);
+							} else {
+								results.add(method.get(i).invoke(object, intList.get(j), stringList.get(k)).toString());
+							}
+
+							parameter.add(intList.get(j).toString() + "-" + '"' + stringList.get(k).toString() + '"');
 						}
 					}
 				}
@@ -145,28 +151,37 @@ public class Generator {
 				if (methodsParameters.toString().contains("int]")) {
 					for (int j = 0; j < stringList.size(); j++) {
 						for (int k = 0; k < intList.size(); k++) {
-							results.add('"' + method.get(i).invoke(object, stringList.get(j), intList.get(k)).toString()
+							if (returnType.get(i).contains("String")) {
+								results.add(
+										'"' + method.get(i).invoke(object, stringList.get(j), intList.get(k)).toString()
 									+ '"');
-							String parameter = '"' + stringList.get(j).toString() + '"' + "-"
-									+ intList.get(k).toString();
-							parameterList.add(parameter);
+							} else {
+								results.add(method.get(i).invoke(object, stringList.get(j), intList.get(k)).toString());
+							}
+
+							parameter.add('"' + stringList.get(j).toString() + '"' + "-" + intList.get(k).toString());
 						}
 					}
 				}
 				if (methodsParameters.toString().contains("String]")) {
 					for (int j = 0; j < stringList.size(); j++) {
 						for (int k = 0; k < stringList.size(); k++) {
-							results.add(
+							if (returnType.get(i).contains("String")) {
+								results.add(
 									'"' + method.get(i).invoke(object, stringList.get(j), stringList.get(k)).toString()
 											+ '"');
-							String parameter = '"' + stringList.get(j).toString() + '"' + "-" + '"'
-									+ stringList.get(k).toString() + '"';
-							parameterList.add(parameter);
+							} else {
+								results.add(
+										method.get(i).invoke(object, stringList.get(j), stringList.get(k)).toString());
+							}
+							parameter.add('"' + stringList.get(j).toString() + '"' + "-" + '"'
+									+ stringList.get(k).toString() + '"');
 						}
 					}
 				}
 			}
 			resultList.add(results.toString());
+			parameterList.add(parameter.toString());
 		}
 		return results;
 	}
@@ -174,22 +189,26 @@ public class Generator {
 	public static ArrayList<String> oneParameterMethod(ArrayList<Method> method, Object object, int i,
 			List methodsParameters) throws IllegalAccessException, InvocationTargetException {
 		ArrayList<String> results = new ArrayList<>();
+		ArrayList<String> parameter = new ArrayList<>();
 		if (method.get(i).getParameterCount() == 1) {
 			if (methodsParameters.toString().contains("int")) {
 				for (int j = 0; j < intList.size(); j++) {
 					results.add(method.get(i).invoke(object, intList.get(j)).toString());
-					String parameter = intList.get(j).toString();
-					parameterList.add(parameter);
+					parameter.add(intList.get(j).toString());
 				}
 			}
 			if (methodsParameters.toString().contains("String")) {
 				for (int j = 0; j < stringList.size(); j++) {
-					results.add('"' + method.get(i).invoke(object, stringList.get(j)).toString() + '"');
-					String parameter = '"' + stringList.get(j).toString() + '"';
-					parameterList.add(parameter);
+					if (returnType.get(i).contains("String")) {
+						results.add('"' + method.get(i).invoke(object, stringList.get(j)).toString() + '"');
+					} else {
+						results.add(method.get(i).invoke(object, stringList.get(j)).toString());
+					}
+					parameter.add('"' + stringList.get(j).toString() + '"');
 				}
 			}
 			resultList.add(results.toString());
+			parameterList.add(parameter.toString());
 		}
 		return results;
 	}
@@ -197,11 +216,12 @@ public class Generator {
 	public static ArrayList<String> zeroParameterMethods(ArrayList<Method> method, Object object, int i)
 			throws IllegalAccessException, InvocationTargetException {
 		ArrayList<String> results = new ArrayList<>();
+		ArrayList<String> parameter = new ArrayList<>();
 		if (method.get(i).getParameterCount() == 0) {
 			results.add(method.get(i).invoke(object).toString());
 			resultList.add(results.toString());
-			String parameter = "";
-			parameterList.add(parameter);
+			parameter.add("/");
+			parameterList.add(parameter.toString());
 		}
 		return results;
 	}
@@ -218,7 +238,18 @@ public class Generator {
 			in.close();
 		}
 		new MethodVisitor().visit(cu, null);
-		classGenerator(classDirectory);
+
+	}
+
+	public static ArrayList<Method> orderReflection() {
+		for (int i = 0; i < methodNamesList.size(); i++) {
+			for (int j = 0; j < methodNamesList.size(); j++) {
+				if (methodNamesList.get(i).equals(methodsUnordered.get(j).getName())) {
+					methodsOrdered.add(methodsUnordered.get(j));
+				}
+			}
+		}
+		return methodsOrdered;
 	}
 
 	// generating the Testclasses with javapoet
@@ -238,21 +269,22 @@ public class Generator {
 		int i = 0;
 		while (i < methodNamesList.size()) {
 			String[] s = resultList.get(i).split(", ");
+			String[] p = parameterList.get(i).split(",");
+
 			int assertSize = Arrays.asList(s).size();
-			String[] inputs = parameterList.toString().split(", ");
 			CodeBlock assertCode[] = new CodeBlock[assertSize];
 
 			int j = 0;
 			while (j < assertSize) {
 				String result = Arrays.asList(s).get(j);
-				String input = Arrays.asList(inputs).get(j);
+				String input = Arrays.asList(p).get(j);
 				if (methodsTypes.get(i).equals("ınt") || methodsTypes.get(i).equals("String")
 						|| methodsTypes.get(i).equals("Boolean")) {
 
 					assertCode[j] = CodeBlock.builder()
 							.addStatement("assertEquals(" + result.replaceAll("(^\\[|\\]$)", "") + ", " + objectName
 									+ "." + methodNamesList.get(i) + "("
-									+ input.replace("-", ", ").replaceAll("(^\\[|\\]$)", "") + "))")
+									+ input.replace("-", ", ").replaceAll("(^\\[|\\]$)", "").replace("/", "") + "))")
 							.build();
 
 				} else {
