@@ -2,10 +2,6 @@
 This is the senior project for Ozyegin University Computer Science department made by Ekin Insel and Ugur Temir.
 This projet will be about test generation tool.
 The first step that we did is parsing the code by using JavaParser and printing the names of the methods and parameters of those parameters and also the start line and finish line of those methods.
-MethodPrinter.java class uses the javaparser and find the methods in the Math.java class and print them with other informations.
-Other classes are not connected to the project they are just for understanding the javaparser and how it works. They are taken from github projects for understanding javaparser examples.
-
-
-Resources for project: https://github.com/javaparser/javaparser-maven-sample
-https://github.com/javaparser/javaparser
-https://github.com/ftomassetti/analyze-java-code-examples
+After than parsing the methods we created a class object from the class that will be tested. With this object we called all functions of the class which returns any object. And we had a list for storing those results for comparing in tests. These results would be expecteds for asserts.
+We generated a test class with java poet and added asserts to that class with expected results and given input numbers and strings.
+At the end of the project, the tool generate a test class with given inputs and when run the test all tests passes.
