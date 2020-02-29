@@ -1,4 +1,4 @@
-package cs401caseClasses;
+package cs402project;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,6 +16,7 @@ import javax.lang.model.element.Modifier;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runners.Parameterized;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -26,6 +27,7 @@ import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeSpec;
 
 public class Generator {
@@ -38,18 +40,25 @@ public class Generator {
 	static ArrayList<String> parameters = new ArrayList<String>();
 	static ArrayList<Integer> parametersNumbersForMethods = new ArrayList<Integer>();
 	static ArrayList<String> methodsTypes = new ArrayList<String>();
+	static int maxParameterNumberForMethods = 0;
 	static String packName;
-	static String stringTXTFILE = "/Users/ekininsel1/Documents/workspace/0deneme/cs401File.txt";
-	static String intTXTFILE = "/Users/ekininsel1/Documents/workspace/0deneme/cs401intFile.txt";
+	static String stringTXTFILE = "/Users/ekininsel1/Documents/workspace/CS/cs401File.txt";
+	static String intTXTFILE = "/Users/ekininsel1/Documents/workspace/CS/cs401intFile.txt";
+	static String intintTXTFILE = "/Users/ekininsel1/Documents/workspace/CS/2parameterInt-Int-nist.txt";
+	static String intstrTXTFILE = "/Users/ekininsel1/Documents/workspace/CS/2parameterInt-Str-nist.txt";
+	static String strstrTXTFILE = "/Users/ekininsel1/Documents/workspace/CS/2parameterStr-Str-nist.txt";
 	static List<String> stringList = new ArrayList<String>();
 	static List<Integer> intList = new ArrayList<Integer>();
+	static List<Integer> intintList = new ArrayList<Integer>();
 	static Scanner intScanner = null;
 	static Scanner stringScanner = null;
+	static Scanner scanner = null;
 	static File intFile = new File(intTXTFILE);
 	static File stringFile = new File(stringTXTFILE);
-	static ArrayList<String> resultList = new ArrayList<>();
-	static ArrayList<String> returnTypeOfMethods = new ArrayList<>();
-	static ArrayList<String> parameterList = new ArrayList<>();
+	static File file = new File(intintTXTFILE);
+	static ArrayList<String> resultList = new ArrayList<String>();
+	static ArrayList<String> returnTypeOfMethods = new ArrayList<String>();
+	static ArrayList<String> parameterList = new ArrayList<String>();
 	static ArrayList<String> inputsTypes = new ArrayList<String>();
 
 	@SuppressWarnings("resource")
@@ -104,124 +113,80 @@ public class Generator {
 	}
 
 	public static void methodCall(ArrayList<Method> method, Object object)
-			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException,
+			InstantiationException, NoSuchMethodException, SecurityException {
 
 		for (int i = 0; i < method.size(); i++) {
 			List methodsParametersTypes = Arrays.asList(method.get(i).getParameterTypes());
 			returnTypeOfMethods.add((method.get(i).getReturnType().toString()));
-			zeroParameterMethods(method, object, i);
-			oneParameterMethod(method, object, i, methodsParametersTypes);
-			twoParameterMethod(method, object, i, methodsParametersTypes);
+			parameterMethod(method, object, i, methodsParametersTypes);
 		}
 	}
 
-	public static ArrayList<String> twoParameterMethod(ArrayList<Method> method, Object object, int i,
-			List methodsParameters) throws IllegalAccessException, InvocationTargetException {
-		ArrayList<String> expectedResults = new ArrayList<>();
-		ArrayList<String> parametersForTests = new ArrayList<>();
-		if (method.get(i).getParameterCount() == 2) {
-			if (methodsParameters.toString().startsWith("[int")) {
-				if (methodsParameters.toString().contains("int]")) {
-					for (int j = 0; j < intList.size(); j++) {
-						for (int k = 0; k < intList.size(); k++) {
-							expectedResults.add(method.get(i).invoke(object, intList.get(j), intList.get(k)).toString());
-							parametersForTests.add(intList.get(j).toString() + "-" + intList.get(k).toString());
-						}
-					}
-				}
-				if (methodsParameters.toString().contains("String]")) {
-					for (int j = 0; j < intList.size(); j++) {
-						for (int k = 0; k < stringList.size(); k++) {
-							if (returnTypeOfMethods.get(i).contains("String")) {
-								expectedResults.add(
-										'"' + method.get(i).invoke(object, intList.get(j), stringList.get(k)).toString()
-									+ '"');
-							} else {
-								expectedResults.add(method.get(i).invoke(object, intList.get(j), stringList.get(k)).toString());
-							}
+	public static ArrayList<String> parameterMethod(ArrayList<Method> method, Object object, int i,
+			List methodsParametersTypes)
+			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
-							parametersForTests.add(intList.get(j).toString() + "-" + '"' + stringList.get(k).toString() + '"');
-						}
-					}
-				}
-			}
-			if (methodsParameters.toString().startsWith("[class java.lang.String")) {
-				if (methodsParameters.toString().contains("int]")) {
-					for (int j = 0; j < stringList.size(); j++) {
-						for (int k = 0; k < intList.size(); k++) {
-							if (returnTypeOfMethods.get(i).contains("String")) {
-								expectedResults.add(
-										'"' + method.get(i).invoke(object, stringList.get(j), intList.get(k)).toString()
-									+ '"');
-							} else {
-								expectedResults.add(method.get(i).invoke(object, stringList.get(j), intList.get(k)).toString());
-							}
+		ArrayList<String> expectedResults = new ArrayList<String>();
+		ArrayList<String> parametersForTests = new ArrayList<String>();
 
-							parametersForTests.add('"' + stringList.get(j).toString() + '"' + "-" + intList.get(k).toString());
-						}
-					}
-				}
-				if (methodsParameters.toString().contains("String]")) {
-					for (int j = 0; j < stringList.size(); j++) {
-						for (int k = 0; k < stringList.size(); k++) {
-							if (returnTypeOfMethods.get(i).contains("String")) {
-								expectedResults.add(
-									'"' + method.get(i).invoke(object, stringList.get(j), stringList.get(k)).toString()
-											+ '"');
-							} else {
-								expectedResults.add(
-										method.get(i).invoke(object, stringList.get(j), stringList.get(k)).toString());
-							}
-							parametersForTests.add('"' + stringList.get(j).toString() + '"' + "-" + '"'
-									+ stringList.get(k).toString() + '"');
-						}
-					}
-				}
-			}
+		if (method.get(i).getParameterCount() == 0) {
+			expectedResults.add(method.get(i).invoke(object).toString());
+			parametersForTests.add("/");
 			resultList.add(expectedResults.toString());
 			parameterList.add(parametersForTests.toString());
-		}
-		return expectedResults;
-	}
-
-	public static ArrayList<String> oneParameterMethod(ArrayList<Method> method, Object object, int i,
-			List methodsParameters) throws IllegalAccessException, InvocationTargetException {
-		ArrayList<String> expectedResults = new ArrayList<>();
-		ArrayList<String> parametersForTests = new ArrayList<>();
-		if (method.get(i).getParameterCount() == 1) {
-			if (methodsParameters.toString().contains("int")) {
+		} else if (method.get(i).getParameterCount() == 1) {
+			if (methodsParametersTypes.toString().contains("int")) {
 				for (int j = 0; j < intList.size(); j++) {
 					expectedResults.add(method.get(i).invoke(object, intList.get(j)).toString());
 					parametersForTests.add(intList.get(j).toString());
 				}
 			}
-			if (methodsParameters.toString().contains("String")) {
+			if (methodsParametersTypes.toString().contains("String")) {
 				for (int j = 0; j < stringList.size(); j++) {
 					if (returnTypeOfMethods.get(i).contains("String")) {
-						expectedResults.add('"' + method.get(i).invoke(object, stringList.get(j)).toString() + '"');
+						expectedResults.add(method.get(i).invoke(object, stringList.get(j)).toString());
 					} else {
 						expectedResults.add(method.get(i).invoke(object, stringList.get(j)).toString());
 					}
-					parametersForTests.add('"' + stringList.get(j).toString() + '"');
+					parametersForTests.add(stringList.get(j).toString());
 				}
 			}
 			resultList.add(expectedResults.toString());
 			parameterList.add(parametersForTests.toString());
-		}
-		return expectedResults;
-	}
+		} else {
+			// System.out.println(methodsParametersTypes);
+			List<String> lis = new ArrayList<String>();
+			String[] combines = new String[methodsParametersTypes.size()];
+			ArrayList<String> comb = new ArrayList<String>();
+			for (int j = 0; j < methodsParametersTypes.size(); j++) {
+				if (methodsParametersTypes.get(j).toString().contains("int")) {
+					lis.add(intList.toString());
+				} else if (methodsParametersTypes.get(j).toString().contains("String")) {
+					lis.add(stringList.toString());
+				}
+				combines = lis.toString().replace("[[", "").replace("]]", "").replace("[", "").split("], ");
+				comb.add(Arrays.asList(combines[j].toString().split(",")).get(j));
+			}
 
-	public static ArrayList<String> zeroParameterMethods(ArrayList<Method> method, Object object, int i)
-			throws IllegalAccessException, InvocationTargetException {
-		ArrayList<String> expectedResults = new ArrayList<>();
-		ArrayList<String> parametersForTest = new ArrayList<>();
-		if (method.get(i).getParameterCount() == 0) {
-			expectedResults.add(method.get(i).invoke(object).toString());
+			Object[] ob = {};
+			ob = (Object[]) comb.toString().replace("[", "").replace("]", "").split(", ");
+			System.out.println(Arrays.asList(ob).toString());
+			// expectedResults.add(method.get(i).invoke(object, ob).toString());
+			// for (int p = 0; p < ob.length; p++) {
+			// System.out.print(Arrays.asList(ob));
+			// }
+			parametersForTests.add(comb.toString().replace(", ", "-").replace("[", "").replace("]", ""));
+
+			// System.out.println();
+
+			// System.out.println(parametersForTests);
+			parameterList.add(parametersForTests.toString());
 			resultList.add(expectedResults.toString());
-			parametersForTest.add("/");
-			parameterList.add(parametersForTest.toString());
+
 		}
 		return expectedResults;
+
 	}
 
 	public static ArrayList<Method> orderReflection() {
@@ -250,17 +215,35 @@ public class Generator {
 	}
 
 	// generating the Testclasses with javapoet
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	private static void classGenerator(String classDirectory) throws Exception {
 		String objectName = getClassName(classDirectory).toString().toLowerCase();
+		for (int m = 1; m < parametersNumbersForMethods.size(); m++) {
+			if (maxParameterNumberForMethods < parametersNumbersForMethods.get(m))
+				maxParameterNumberForMethods = parametersNumbersForMethods.get(m);
+		}
+		FieldSpec[] inputs = new FieldSpec[maxParameterNumberForMethods];
+		List<FieldSpec> inputFields = null;
+		
+		for (int y = 0; y < maxParameterNumberForMethods; y++) {
+			inputs[y] = FieldSpec.builder(Integer.class, "int"+y, Modifier.PUBLIC).build();
+		}
+		inputFields = Arrays.asList(inputs);
 
 		FieldSpec classObject = FieldSpec.builder(classMaker(classDirectory, packName), objectName)
 				.addModifiers(Modifier.PRIVATE).initializer("new $T()", classMaker(classDirectory, packName)).build();
 
 		MethodSpec[] testMethods = new MethodSpec[methodNamesList.size()];
 		List<MethodSpec> testMethodList = null;
+		MethodSpec[] parameterizedMethods = new MethodSpec[methodNamesList.size()];
+		List<MethodSpec> testParameterizedList = null;
+		MethodSpec[] constructors = new MethodSpec[methodNamesList.size()];
+		List<MethodSpec> constructorsList = null;
+		ParameterSpec[] paramets = new ParameterSpec[methodNamesList.size()];
+		List<ParameterSpec> parConstList = null;
 
 		List<CodeBlock> assertList = null;
+		List<String> parameterizedList = null;
 		int i = 0;
 		while (i < methodNamesList.size()) {
 			String[] expectedsArray = resultList.get(i).split(", ");
@@ -268,14 +251,20 @@ public class Generator {
 
 			int assertSize = Arrays.asList(expectedsArray).size();
 			CodeBlock assertCode[] = new CodeBlock[assertSize];
-
+			String[] parameterizedString = new String[assertSize];
+			String testName = methodNamesList.get(i).substring(0, 1).toUpperCase()
+					+ methodNamesList.get(i).substring(1);
 			int j = 0;
 			while (j < assertSize) {
 				String expected = Arrays.asList(expectedsArray).get(j);
 				String input = Arrays.asList(parametersArray).get(j);
+
 				if (methodsTypes.get(i).equals("ınt") || methodsTypes.get(i).equals("String")
 						|| methodsTypes.get(i).equals("Boolean")) {
 
+					parameterizedString[j] = "{"
+							+ input.replaceAll("(^\\[|\\]$)", "").replace("/", "null").replace("-", ",") + ","
+							+ expected.replaceAll("(^\\[|\\]$)", "") + "} ";
 					assertCode[j] = CodeBlock.builder()
 							.addStatement("assertEquals(" + expected.replaceAll("(^\\[|\\]$)", "") + ", " + objectName
 									+ "." + methodNamesList.get(i) + "("
@@ -283,28 +272,41 @@ public class Generator {
 							.build();
 
 				} else {
+					parameterizedString[j] = "{"
+							+ input.replaceAll("(^\\[|\\]$)", "").replace("/", "null").replace("-", ",") + "} ";
 					assertCode[j] = CodeBlock.builder()
 							.addStatement("assertNotNull(" + objectName + "." + methodNamesList.get(i) + "("
 									+ input.replace("-", ", ").replaceAll("(^\\[|\\]$)", "") + "))")
 							.build();
 				}
+
 				j++;
 			}
-
 			assertList = Arrays.asList(assertCode);
+			parameterizedList = Arrays.asList(parameterizedString);
 
-			String testName = methodNamesList.get(i).substring(0, 1).toUpperCase()
-					+ methodNamesList.get(i).substring(1);
+			constructors[i] = MethodSpec.constructorBuilder().build();
+			constructorsList = Arrays.asList(constructors);
+
+			parameterizedMethods[i] = MethodSpec.methodBuilder(testName + "Input")
+					.addAnnotation(Parameterized.Parameters.class).returns(List.class)
+					.addStatement("return Arrays.asList( new Object[][] { "
+							+ parameterizedList.toString().replaceAll("(^\\[|\\]$)", "") + " })")
+					.addModifiers(Modifier.PUBLIC, Modifier.STATIC).build();
+			testParameterizedList = Arrays.asList(parameterizedMethods);
 
 			testMethods[i] = MethodSpec.methodBuilder("test" + testName).addAnnotation(Test.class)
 					.addModifiers(Modifier.PUBLIC, Modifier.FINAL)
 					.addCode(assertList.toString().replaceAll("(^\\[|\\]$)", "").replaceAll("\n,", "\n")).build();
 			testMethodList = Arrays.asList(testMethods);
+
 			i++;
 		}
 
-		TypeSpec generatedTestClass = TypeSpec.classBuilder(getClassName(classDirectory) + "Test").addField(classObject)
-				.addMethods(testMethodList).addModifiers(Modifier.PUBLIC).build();
+		TypeSpec generatedTestClass = TypeSpec.classBuilder(getClassName(classDirectory) + "Test")
+				.addFields(inputFields).addField(classObject)
+				.addMethods(constructorsList).addMethods(testParameterizedList).addMethods(testMethodList)
+				.addModifiers(Modifier.PUBLIC).build();
 
 		JavaFile javaFile = JavaFile.builder("junit.generate.test", generatedTestClass)
 				.addFileComment("AUTO_GENERATED BY TestGenerationTool \n")
