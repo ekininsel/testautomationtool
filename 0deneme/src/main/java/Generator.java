@@ -15,6 +15,7 @@ import java.util.Scanner;
 import javax.lang.model.element.Modifier;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runners.Parameterized;
 
@@ -40,7 +41,9 @@ public class Generator {
 	static ArrayList<String> parameters = new ArrayList<String>();
 	static ArrayList<Integer> parametersNumbersForMethods = new ArrayList<Integer>();
 	static ArrayList<String> methodsTypes = new ArrayList<String>();
-	static int maxParameterNumberForMethods = 0;
+	static int constructorNumber = 0;
+	static int maxIntObjectNumber = 0;
+	static int maxStringObjectNumber = 0;
 	static String packName;
 	static String stringTXTFILE = "/Users/ekininsel1/Documents/workspace/CS/cs401File.txt";
 	static String intTXTFILE = "/Users/ekininsel1/Documents/workspace/CS/cs401intFile.txt";
@@ -215,37 +218,168 @@ public class Generator {
 	}
 
 	// generating the Testclasses with javapoet
-	@SuppressWarnings({ "unchecked", "deprecation" })
+	@SuppressWarnings({ "unchecked", "deprecation", "null" })
 	private static void classGenerator(String classDirectory) throws Exception {
 		String objectName = getClassName(classDirectory).toString().toLowerCase();
-		for (int m = 1; m < parametersNumbersForMethods.size(); m++) {
-			if (maxParameterNumberForMethods < parametersNumbersForMethods.get(m))
-				maxParameterNumberForMethods = parametersNumbersForMethods.get(m);
+		List parameteredMethods = new ArrayList<String>();
+		List total = new ArrayList<String>();
+		ArrayList<String> expectedMethodsTypes = new ArrayList<String>();
+
+		for (int p = 0; p < parameters.size(); p++) {
+			if (!parameters.get(p).equals("")) {
+				expectedMethodsTypes.add(methodsTypes.get(p));
+				constructorNumber++;
+				String[] parametersTypes = new String[Arrays.asList(parameters.get(p).split(",")).size()];
+				for (int w = 0; w < Arrays.asList(parameters.get(p).split(",")).size(); w++) {
+					if (Arrays.asList(parameters.get(p).split(",")).get(w).contains("ınt"))
+						parametersTypes[w] = "int";
+					if (Arrays.asList(parameters.get(p).split(",")).get(w).contains("String"))
+						parametersTypes[w] = "String";
+				}
+				total.add(Arrays.asList(parametersTypes));
+				parameteredMethods.add(parameters.get(p));
+			}
+
+			List<String> objects = Arrays.asList(parameters.get(p).toString().split(","));
+			for (int f = 0; f < objects.size(); f++) {
+				if (objects.get(f).toString().contains("ınt ")) {
+					maxIntObjectNumber++;
+				}
+				if (objects.get(f).toString().contains("String ")) {
+					maxStringObjectNumber++;
+				}
+			}
 		}
-		FieldSpec[] inputs = new FieldSpec[maxParameterNumberForMethods];
-		List<FieldSpec> inputFields = null;
+		int sameTypeParameter = 0;
+		for (int e = 0; e < total.size(); e++) {
+			for (int w = e + 1; w < total.size(); w++) {
+				// System.out.println(total.get(e) + "---------" +
+				// total.get(w));
+				if (total.get(e).equals(total.get(w))
+						&& expectedMethodsTypes.get(e).equals(expectedMethodsTypes.get(w))) {
+					sameTypeParameter += 1;
+					total.remove(w);
+					expectedMethodsTypes.remove(e);
+				}
+			}
+		}
+		constructorNumber -= sameTypeParameter;
+
+		FieldSpec[] intObjects = new FieldSpec[maxIntObjectNumber];
+		FieldSpec[] strObjects = new FieldSpec[maxStringObjectNumber];
+		List<FieldSpec> ints = null;
+		List<FieldSpec> strs = null;
+		for (int t = 0; t < maxIntObjectNumber; t++) {
+			intObjects[t] = FieldSpec.builder(int.class, "int" + t, Modifier.PUBLIC).build();
+		}
+		for (int h = 0; h < maxStringObjectNumber; h++) {
+			strObjects[h] = FieldSpec.builder(String.class, "str" + h, Modifier.PUBLIC).build();
+		}
 		
-		for (int y = 0; y < maxParameterNumberForMethods; y++) {
-			inputs[y] = FieldSpec.builder(Integer.class, "int"+y, Modifier.PUBLIC).build();
-		}
-		inputFields = Arrays.asList(inputs);
+		ints = Arrays.asList(intObjects);
+		strs = Arrays.asList(strObjects);
 
 		FieldSpec classObject = FieldSpec.builder(classMaker(classDirectory, packName), objectName)
-				.addModifiers(Modifier.PRIVATE).initializer("new $T()", classMaker(classDirectory, packName)).build();
+				.addModifiers(Modifier.PUBLIC)
+				// .addModifiers(Modifier.PUBLIC).initializer("new $T()",
+				// classMaker(classDirectory, packName))
+				.build();
+
+		FieldSpec expectedObject = FieldSpec.builder(Object.class, "expectedResult", Modifier.PUBLIC).build();
+
 
 		MethodSpec[] testMethods = new MethodSpec[methodNamesList.size()];
 		List<MethodSpec> testMethodList = null;
 		MethodSpec[] parameterizedMethods = new MethodSpec[methodNamesList.size()];
 		List<MethodSpec> testParameterizedList = null;
-		MethodSpec[] constructors = new MethodSpec[methodNamesList.size()];
+		MethodSpec[] constructors = new MethodSpec[constructorNumber];
 		List<MethodSpec> constructorsList = null;
-		ParameterSpec[] paramets = new ParameterSpec[methodNamesList.size()];
-		List<ParameterSpec> parConstList = null;
+		List<ParameterSpec> parConstList = new ArrayList();
+		List<CodeBlock> statementsList = new ArrayList();
+		ParameterSpec[] expectedParameter = new ParameterSpec[constructorNumber];
+		List<ParameterSpec> expectedParList = null;
+		CodeBlock[] expectedStatements = new CodeBlock[constructorNumber];
+		List<CodeBlock> expectedStates = null;
+
+		for (int d = 0; d < constructorNumber; d++) {
+			Class[] types = new Class[constructorNumber];
+			if (expectedMethodsTypes.get(d).equals("ınt")) {
+				types[d] = int.class;
+			}
+			if (expectedMethodsTypes.get(d).equals("String")) {
+				types[d] = String.class;
+			}
+			if (expectedMethodsTypes.get(d).equals("Boolean")) {
+				types[d] = Boolean.class;
+			}
+			if (expectedMethodsTypes.get(d).equals("Object")) {
+				types[d] = Object.class;
+			}
+			ParameterSpec[] parForConst = new ParameterSpec[Arrays.asList(total.get(d).toString().split(",")).size()];
+			CodeBlock[] statements = new CodeBlock[Arrays.asList(total.get(d).toString().split(",")).size()];
+
+			for (int c = 0; c < Arrays.asList(total.get(d).toString().split(",")).size(); c++) {
+				if (Arrays.asList(total.get(d).toString().split(",")).get(c).contains("int")) {
+					parForConst[c] = (ParameterSpec.builder(int.class, "int" + c).build());
+					statements[c] = CodeBlock.builder().addStatement("this.int" + c + " = int" + c).build();
+				}
+				if (Arrays.asList(total.get(d).toString().split(",")).get(c).contains("String")) {
+					parForConst[c] = (ParameterSpec.builder(String.class, "str" + c).build());
+					statements[c] = CodeBlock.builder().addStatement("this.str" + c + " = str" + c).build();
+				}
+				expectedParameter[d] = ParameterSpec.builder(types[d], "expectedResult").build();
+				expectedStatements[d] = CodeBlock.builder().addStatement("this.expectedResult = expectedResult")
+						.build();
+
+			}
+			// System.out.println(expectedParameter[d]);
+
+			parConstList = Arrays.asList(parForConst);
+			statementsList = Arrays.asList(statements);
+			expectedParList = Arrays.asList(expectedParameter[d]);
+			expectedStates = Arrays.asList(expectedStatements[d]);
+
+			constructors[d] = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
+					.addParameters(parConstList)
+					.addParameters(expectedParList)
+					.addCode(statementsList.toString().replaceAll("(^\\[|\\]$)", "").replaceAll("\n,", "\n"))
+					.addCode(expectedStates.toString().replaceAll("(^\\[|\\]$)", "").replaceAll("\n,", "\n"))
+					.build();
+
+			
+//			System.out.println(parConstList);
+		}
+
+		constructorsList = Arrays.asList(constructors);
 
 		List<CodeBlock> assertList = null;
 		List<String> parameterizedList = null;
+
 		int i = 0;
 		while (i < methodNamesList.size()) {
+			System.out.println(parameters.get(i));
+			String[] givens = new String[Arrays.asList(parameters.get(i).toString().split(",")).size()];
+			int e = 0;
+			while (e < Arrays.asList(parameters.get(i).toString().split(",")).size()) {
+				if (Arrays.asList(parameters.get(i).toString().split(",")).get(e).contains("ınt")) {
+					givens[e] = "int" + e;
+				}
+				if (Arrays.asList(parameters.get(i).toString().split(",")).get(e).contains("String")) {
+					givens[e] = "str" + e;
+				} else if (parameters.get(i).equals("")) {
+					givens[e] = "";
+				}
+				// System.out.println(givens[e]);
+				e++;
+			}
+
+			List<String> tt = Arrays.asList(givens);
+			System.out.println(tt);
+
+			CodeBlock asserting = CodeBlock.builder()
+					.addStatement("assertEquals(expectedResult," + objectName + "." + methodNamesList.get(i) + "("
+							+ tt.toString().replaceAll("(^\\[|\\]$)", "") + "))")
+					.build();
 			String[] expectedsArray = resultList.get(i).split(", ");
 			String[] parametersArray = parameterList.get(i).split(",");
 
@@ -254,6 +388,7 @@ public class Generator {
 			String[] parameterizedString = new String[assertSize];
 			String testName = methodNamesList.get(i).substring(0, 1).toUpperCase()
 					+ methodNamesList.get(i).substring(1);
+
 			int j = 0;
 			while (j < assertSize) {
 				String expected = Arrays.asList(expectedsArray).get(j);
@@ -265,30 +400,33 @@ public class Generator {
 					parameterizedString[j] = "{"
 							+ input.replaceAll("(^\\[|\\]$)", "").replace("/", "null").replace("-", ",") + ","
 							+ expected.replaceAll("(^\\[|\\]$)", "") + "} ";
-					assertCode[j] = CodeBlock.builder()
-							.addStatement("assertEquals(" + expected.replaceAll("(^\\[|\\]$)", "") + ", " + objectName
-									+ "." + methodNamesList.get(i) + "("
-									+ input.replace("-", ", ").replaceAll("(^\\[|\\]$)", "").replace("/", "") + "))")
-							.build();
+					// assertCode[j] = CodeBlock.builder()
+					// .addStatement("assertEquals(" +
+					// expected.replaceAll("(^\\[|\\]$)", "") + ", " +
+					// objectName
+					// + "." + methodNamesList.get(i) + "("
+					// + input.replace("-", ", ").replaceAll("(^\\[|\\]$)",
+					// "").replace("/", "") + "))")
+					// .build();
 
 				} else {
 					parameterizedString[j] = "{"
 							+ input.replaceAll("(^\\[|\\]$)", "").replace("/", "null").replace("-", ",") + "} ";
-					assertCode[j] = CodeBlock.builder()
-							.addStatement("assertNotNull(" + objectName + "." + methodNamesList.get(i) + "("
-									+ input.replace("-", ", ").replaceAll("(^\\[|\\]$)", "") + "))")
-							.build();
+					// assertCode[j] = CodeBlock.builder()
+					// .addStatement("assertNotNull(" + objectName + "." +
+					// methodNamesList.get(i) + "("
+					// + input.replace("-", ", ").replaceAll("(^\\[|\\]$)", "")
+					// + "))")
+					// .build();
 				}
-
 				j++;
 			}
-			assertList = Arrays.asList(assertCode);
+			// CodeBlock[] asserting = new CodeBlock[methodNamesList.size()];
+
+			assertList = Arrays.asList(asserting);
 			parameterizedList = Arrays.asList(parameterizedString);
 
-			constructors[i] = MethodSpec.constructorBuilder().build();
-			constructorsList = Arrays.asList(constructors);
-
-			parameterizedMethods[i] = MethodSpec.methodBuilder(testName + "Input")
+			parameterizedMethods[i] = MethodSpec.methodBuilder("dataSetFor" + testName)
 					.addAnnotation(Parameterized.Parameters.class).returns(List.class)
 					.addStatement("return Arrays.asList( new Object[][] { "
 							+ parameterizedList.toString().replaceAll("(^\\[|\\]$)", "") + " })")
@@ -297,14 +435,19 @@ public class Generator {
 
 			testMethods[i] = MethodSpec.methodBuilder("test" + testName).addAnnotation(Test.class)
 					.addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-					.addCode(assertList.toString().replaceAll("(^\\[|\\]$)", "").replaceAll("\n,", "\n")).build();
+					.addCode(assertList.toString().replaceAll("(^\\[|\\]$)", "").replaceAll("\n,", "\n"))
+					.build();
 			testMethodList = Arrays.asList(testMethods);
 
 			i++;
 		}
+		MethodSpec beforeTests = MethodSpec.methodBuilder("initialize").addAnnotation(Before.class)
+				.addModifiers(Modifier.PUBLIC)
+				.addStatement(objectName + " = new " + getClassName(classDirectory) + "()").build();
 
 		TypeSpec generatedTestClass = TypeSpec.classBuilder(getClassName(classDirectory) + "Test")
-				.addFields(inputFields).addField(classObject)
+				.addFields(ints).addFields(strs).addField(expectedObject)
+				.addField(classObject).addMethod(beforeTests)
 				.addMethods(constructorsList).addMethods(testParameterizedList).addMethods(testMethodList)
 				.addModifiers(Modifier.PUBLIC).build();
 
