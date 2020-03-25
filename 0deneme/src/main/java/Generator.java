@@ -51,25 +51,31 @@ public class Generator {
 	static String intTXTFILE = "/Users/ekininsel1/Documents/workspace/seniorProject/cs401intFile.txt";
 	static String booleanTXTFILE = "/Users/ekininsel1/Documents/workspace/seniorProject/cs401booleanFile";
 
-	static String bool_boolFile = "/Users/ekininsel1/Documents/workspace/seniorProject/bool-bool File";
-	static List<String> bool_boolList = new ArrayList<String>();
-	static File bool_boolFiles = new File(bool_boolFile);
-	static String bool_strFile = "/Users/ekininsel1/Documents/workspace/seniorProject/bool-str File";
-	static List<String> bool_strList = new ArrayList<String>();
-	static File bool_strFiles = new File(bool_strFile);
-	static String int_boolFile = "/Users/ekininsel1/Documents/workspace/seniorProject/int-bool File";
-	static List<String> int_boolList = new ArrayList<String>();
-	static File int_boolFiles = new File(int_boolFile);
-	static String int_intFile = "/Users/ekininsel1/Documents/workspace/seniorProject/int-int File";
-	static List<String> int_intList = new ArrayList<String>();
-	static File int_intFiles = new File(int_intFile);
-	static String int_strFile = "/Users/ekininsel1/Documents/workspace/seniorProject/int-str File";
-	static List<String> int_strList = new ArrayList<String>();
-	static File int_strFiles = new File(int_strFile);
-	static String str_strFile = "/Users/ekininsel1/Documents/workspace/seniorProject/str-str File";
-	static List<String> str_strList = new ArrayList<String>();
-	static File str_strFiles = new File(str_strFile);
-	static Scanner listScanner = null;
+	// static String bool_boolFile =
+	// "/Users/ekininsel1/Documents/workspace/seniorProject/bool-bool File";
+	// static List<String> bool_boolList = new ArrayList<String>();
+	// static File bool_boolFiles = new File(bool_boolFile);
+	// static String bool_strFile =
+	// "/Users/ekininsel1/Documents/workspace/seniorProject/bool-str File";
+	// static List<String> bool_strList = new ArrayList<String>();
+	// static File bool_strFiles = new File(bool_strFile);
+	// static String int_boolFile =
+	// "/Users/ekininsel1/Documents/workspace/seniorProject/int-bool File";
+	// static List<String> int_boolList = new ArrayList<String>();
+	// static File int_boolFiles = new File(int_boolFile);
+	// static String int_intFile =
+	// "/Users/ekininsel1/Documents/workspace/seniorProject/int-int File";
+	// static List<String> int_intList = new ArrayList<String>();
+	// static File int_intFiles = new File(int_intFile);
+	// static String int_strFile =
+	// "/Users/ekininsel1/Documents/workspace/seniorProject/int-str File";
+	// static List<String> int_strList = new ArrayList<String>();
+	// static File int_strFiles = new File(int_strFile);
+	// static String str_strFile =
+	// "/Users/ekininsel1/Documents/workspace/seniorProject/str-str File";
+	// static List<String> str_strList = new ArrayList<String>();
+	// static File str_strFiles = new File(str_strFile);
+	// static Scanner listScanner = null;
 
 	static List<String> stringList = new ArrayList<String>();
 	static List<Integer> intList = new ArrayList<Integer>();
@@ -97,7 +103,7 @@ public class Generator {
 		intListsScanner();
 		stringListScanner();
 		booleanListScanner();
-		twoParametersListCreator();
+		// twoParametersListCreator();
 		methodParser(in, classDirectory);
 		objectCreator(classMaker(classDirectory, packName));
 		classGenerator(classDirectory);
@@ -130,23 +136,25 @@ public class Generator {
 		return booleanList.toArray();
 	}
 
-	public static Object[] listScanner(Scanner scanner, File file, List<String> list) throws FileNotFoundException {
-		scanner = new Scanner(file);
-		while (scanner.hasNext()) {
-			list.add(scanner.next());
-		}
-		scanner.close();
-		return list.toArray();
-	}
-
-	public static void twoParametersListCreator() throws FileNotFoundException {
-		listScanner(listScanner, bool_boolFiles, bool_boolList);
-		listScanner(listScanner, bool_strFiles, bool_strList);
-		listScanner(listScanner, int_boolFiles, int_boolList);
-		listScanner(listScanner, int_intFiles, int_intList);
-		listScanner(listScanner, int_strFiles, int_strList);
-		listScanner(listScanner, str_strFiles, str_strList);
-	}
+	// public static Object[] listScanner(Scanner scanner, File file,
+	// List<String> list) throws FileNotFoundException {
+	// scanner = new Scanner(file);
+	// while (scanner.hasNext()) {
+	// list.add(scanner.next());
+	// }
+	// scanner.close();
+	// return list.toArray();
+	// }
+	//
+	// public static void twoParametersListCreator() throws
+	// FileNotFoundException {
+	// listScanner(listScanner, bool_boolFiles, bool_boolList);
+	// listScanner(listScanner, bool_strFiles, bool_strList);
+	// listScanner(listScanner, int_boolFiles, int_boolList);
+	// listScanner(listScanner, int_intFiles, int_intList);
+	// listScanner(listScanner, int_strFiles, int_strList);
+	// listScanner(listScanner, str_strFiles, str_strList);
+	// }
 
 	public static Object objectCreator(Class className) throws Exception {
 		Object classObject = className.newInstance();
@@ -206,26 +214,42 @@ public class Generator {
 			}
 
 			ArrayList<String> inputParameters = new ArrayList<String>();
-			// get(0) kısmını değiştir!
+
+			// [0] kısmını değiştir!
 			for (int p = 0; p < lis.size(); p++) {
-				inputParameters.add(Arrays.asList(lis.get(p).toString().replace("[", "").split(",")).get(0));
+				String[][] deneme = new String[lis.size()][Arrays.asList(lis.get(p).toString().split(",")).size()];
+				for (int h = 0; h < Arrays.asList(lis.get(p).toString().split(",")).size(); h++) {
+					deneme[p][h] = Arrays.asList(
+							lis.get(p).toString().replace("[", "").replace("]", "").split(","))
+							.get(h);
+
+					System.out.println(deneme[p][h]);
+
+				}
+
+
+				// inputParameters.add();
+
+				// inputParameters.add(deneme[0][1]);
+				// inputParameters.add(deneme[1][1]);
 			}
 
+			
 			parametersForTests.add(inputParameters.toString().replace(", ", "-").replace("[", "").replace("]", ""));
-			System.out.println(parametersForTests);
+
+			// System.out.println(parametersForTests);
 			// expectedResults.add(method.get(i).invoke(object,
 			// inputParameters.toArray()).toString());
+
 			parameterList.add(parametersForTests.toString());
 			resultList.add(expectedResults.toString());
 		}
 		return expectedResults;
-
 	}
 
 	public static void oneParameterMethod(ArrayList<Method> method, Object object, int i,
-			List<String> methodsParametersTypes,
-			ArrayList<String> expectedResults, ArrayList<String> parametersForTests)
-			throws IllegalAccessException, InvocationTargetException {
+			List<String> methodsParametersTypes, ArrayList<String> expectedResults,
+			ArrayList<String> parametersForTests) throws IllegalAccessException, InvocationTargetException {
 		if (methodsParametersTypes.toString().contains("int")) {
 			for (int j = 0; j < intList.size(); j++) {
 				expectedResults.add(method.get(i).invoke(object, intList.get(j)).toString());
@@ -273,7 +297,11 @@ public class Generator {
 
 	// generating the Testclasses with javapoet
 	private static void classGenerator(String classDirectory) throws Exception {
+		// System.out.println(parameterList);
 		String objectName = getClassName(classDirectory).toString().toLowerCase();
+		FieldSpec classObject = FieldSpec.builder(classMaker(classDirectory, packName), objectName)
+				.addModifiers(Modifier.PUBLIC).build();
+
 		List<String> datas = null;
 		objectNumberFinder();
 
@@ -288,9 +316,6 @@ public class Generator {
 		ints = Arrays.asList(intObjects);
 		strs = Arrays.asList(strObjects);
 		bools = Arrays.asList(boolObjects);
-
-		FieldSpec classObject = FieldSpec.builder(classMaker(classDirectory, packName), objectName)
-				.addModifiers(Modifier.PUBLIC).build();
 
 		FieldSpec[] expectedObjects = new FieldSpec[methodNamesList.size()];
 		List<FieldSpec> expecteds = null;
@@ -310,8 +335,8 @@ public class Generator {
 		MethodSpec constructor = constructorMakerForTest(constructors, lists);
 
 		List<CodeBlock> assertList = null;
-		int i = 0;
 
+		int i = 0;
 		while (i < methodNamesList.size()) {
 			String[] Asserts = new String[Arrays.asList(parameters.get(i).toString().split(", ")).size()];
 			objectsInsideAssertions(i, Asserts);
@@ -327,23 +352,26 @@ public class Generator {
 					.addCode(assertList.toString().replaceAll("(^\\[|\\]$)", "").replaceAll("\n,", "\n")).build();
 			testMethodList = Arrays.asList(testMethods);
 
-			
-			List<String> expect = new ArrayList<String>();
 			List<String> results = new ArrayList<String>();
-			// get(0) kısmı değişmeli!
+
+			// [0] kısmı değişmeli!
 			for (int p = 0; p < resultList.size(); p++) {
-				results.add(Arrays.asList(resultList.get(p).toString().split(",")).toString().replace("[[", "")
-						.replace("[", "").replace("]]", "").replace("]", ""));
-				expect.add(Arrays.asList(results.get(p).split(",")).get(0));
+				String[][] resultDimension = new String[resultList.size()][Arrays
+						.asList(resultList.get(p).toString().split(",")).size()];
+				for (int h = 0; h < Arrays.asList(resultList.get(p).toString().split(",")).size(); h++) {
+					resultDimension[p][h] = Arrays
+							.asList(resultList.get(p).toString().replace("[", "").replace("]", "").split(",")).get(h);
+				}
+				results.add(resultDimension[p][0]);
 			}
 
 			// DEĞİŞMELİ her seçeneğe göre bir data listesi oluşturmalı
 			String[] dataList = new String[constructors.size()];
 			int z = 0;
-			while (z < expect.size()) {
+			while (z < results.size()) {
 				for (int y = 0; y < constructors.size(); y++) {
 					if (constructors.get(y).toString().contains("Expected")) {
-						dataList[y] = expect.get(z);
+						dataList[y] = results.get(z);
 						z++;
 					} else if (constructors.get(y).toString().contains("str")) {
 						dataList[y] = stringList.get(0);
@@ -357,7 +385,7 @@ public class Generator {
 			}
 			i++;
 		}
-		System.out.println(datas);
+
 		MethodSpec beforeTests = initializerForTestClass(classDirectory, objectName);
 
 		MethodSpec data = parameterizedMaker(datas);
@@ -385,10 +413,12 @@ public class Generator {
 	}
 
 	public static AnnotationSpec runWithMaker() {
-		AnnotationSpec run = AnnotationSpec.builder(RunWith.class).addMember("", "Parameterized.class").build();
+		CodeBlock parameterized = CodeBlock.builder().addStatement("Parameterized.class").build();
+		AnnotationSpec run = AnnotationSpec.builder(RunWith.class).addMember("value", "Parameterized.class").build();
 		return run;
 	}
 
+	// Data.toString() kısmı değişecek
 	public static MethodSpec parameterizedMaker(List<String> datas) {
 		MethodSpec data = MethodSpec.methodBuilder("dataForParameterized").addAnnotation(Parameterized.Parameters.class)
 				.returns(List.class)
